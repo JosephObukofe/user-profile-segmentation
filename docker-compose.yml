@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  postgres-db-user-profile-segmentation:
+    image: postgres:14
+    container_name: postgres-db-user-profile-segmentation
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data
+    networks:
+      - profile-segmentation
+
+  pgadmin-user-profile-segmentation:
+    image: elestio/pgadmin
+    container_name: pgadmin-user-profile-segmentation
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "${PGADMIN_PORT}:80"
+    networks:
+      - profile-segmentation
+    depends_on:
+      - postgres-db-user-profile-segmentation
+
+  minio-user-profile-segmentation:
+    image: minio/minio:latest
+    container_name: minio-user-profile-segmentation
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "${MINIO_PORT}:${MINIO_PORT}"
+      - "9000:9000"
+    volumes:
+      - ./minio:/minio
+    networks:
+      - profile-segmentation
+    command: minio server /minio --console-address ":${MINIO_PORT}"
+
+  mlflow-user-profile-segmentation:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mlflow-user-profile-segmentation
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      MLFLOW_S3_ENDPOINT_URL: ${MLFLOW_S3_ENDPOINT_URL}
+    ports:
+      - "${MLFLOW_PORT}:5003"
+    networks:
+      - profile-segmentation
+    command: >
+      mlflow server
+      --backend-store-uri ${MLFLOW_BACKEND_STORE_URI}
+      --default-artifact-root ${MLFLOW_ARTIFACTS_URI}
+      --host 0.0.0.0
+      --port 5003
+    depends_on:
+      - minio-user-profile-segmentation
+
+
+
+networks:
+  profile-segmentation:
+    driver: bridge
+
+

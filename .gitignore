@@ -1,0 +1,10 @@
+.env
+./poetry.lock
+./pyproject.toml
+./minio
+./pg_data
+__pycache__/
+/Users/josephobukofe/Downloads/user_profile_segmentation/user_profile_segmentation/model/evaluation/dbscan_features
+/Users/josephobukofe/Downloads/user_profile_segmentation/user_profile_segmentation/model/evaluation/hierarchical_features
+/Users/josephobukofe/Downloads/user_profile_segmentation/user_profile_segmentation/model/evaluation/kmeans_features
+/Users/josephobukofe/Downloads/user_profile_segmentation/user_profile_segmentation/model/evaluation/spectral_features
